@@ -4,7 +4,7 @@ import io
 import pathlib
 
 # Carpeta de plantillas
-TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates_word"
+TEMPLATES_DIR = pathlib.Path(__file__).parent
 plantillas     = list(TEMPLATES_DIR.glob("*.docx"))
 
 # Si no hay plantillas, mostramos error y detenemos
@@ -53,3 +53,4 @@ if st.button("🖨 Generar Documento"):
         file_name=f"{ruta_plantilla.stem}_rellenado.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
