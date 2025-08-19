@@ -5,55 +5,59 @@ import io
 import pathlib
 import re
 
-# --- Función auxiliar: extraer campos en orden ---
-def extract_fields_in_order(path_docx):
-    text = docx2python(path_docx).text
+# --- Función auxiliar: extraer campos en el orden en que aparecen ---
+def extract_fields_in_order(path_docx: pathlib.Path):
+    text = docx2python(str(path_docx)).text
     # Busca {{ campo }} en orden de aparición
-    campos = re.findall(r"{{\s*(\w+)\s*}}", text)
+    campos = re.findall(r"{{\s*([A-Za-z0-9_]+)\s*}}", text)
 
-    # Eliminar duplicados pero mantener el orden
-    campos_unicos = []
+    # Elimina duplicados manteniendo el orden
+    vistos = set()
+    ordenados = []
     for c in campos:
-        if c not in campos_unicos:
-            campos_unicos.append(c)
-    return campos_unicos
+        if c not in vistos:
+            vistos.add(c)
+            ordenados.append(c)
+    return ordenados
 
-# --- Carpeta de plantillas ---
-TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates_word"
-plantillas     = list(TEMPLATES_DIR.glob("*.docx"))
+# --- Carpeta donde buscar plantillas: la misma que app.py ---
+BASE_DIR = pathlib.Path(__file__).parent
+plantillas = list(BASE_DIR.glob("*.docx"))
 
+# Si no hay .docx junto a app.py, avisamos y paramos
 if not plantillas:
-    st.error("La carpeta `templates_word/` está vacía. Añade ahí tus .docx y recarga.")
+    st.error("No se han encontrado archivos .docx junto a este app.py. "
+             "Sube tus plantillas .docx a la raíz del repositorio y recarga.")
     st.stop()
 
-# --- Diccionario etiqueta -> ruta ---
+# Mapea etiqueta legible -> ruta del archivo
 label_to_path = {
     p.stem.replace("_", " ").title(): p
     for p in plantillas
 }
-etiquetas = list(label_to_path.keys())
+etiquetas = sorted(label_to_path.keys())
 
 st.title("🖨 Generador de Documentos - Ubadat Viajes")
 
-# --- Selector de plantilla ---
-choice_label   = st.selectbox("Elige tu plantilla", etiquetas)
+# Selector de plantilla
+choice_label = st.selectbox("Elige tu plantilla", etiquetas)
 ruta_plantilla = label_to_path[choice_label]
 
-# --- Cargar plantilla y extraer campos ---
-tpl    = DocxTemplate(str(ruta_plantilla))
+# Carga la plantilla y extrae campos en orden
+tpl = DocxTemplate(str(ruta_plantilla))
 campos = extract_fields_in_order(ruta_plantilla)
 
 if not campos:
-    st.error("No se han encontrado marcadores {{ campo }} en la plantilla.")
+    st.error("No se han encontrado marcadores {{ campo }} en la plantilla seleccionada.")
     st.stop()
 
-# --- Formulario dinámico ---
+# Formulario dinámico en el orden de aparición
 st.markdown("### Rellena los campos:")
 context = {}
 for c in campos:
     context[c] = st.text_input(c)
 
-# --- Generar y descargar ---
+# Generar y descargar
 if st.button("🖨 Generar Documento"):
     tpl.render(context)
     buf = io.BytesIO()
@@ -66,3 +70,5 @@ if st.button("🖨 Generar Documento"):
         file_name=f"{ruta_plantilla.stem}_rellenado.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+
