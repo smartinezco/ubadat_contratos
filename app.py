@@ -20,11 +20,20 @@ def extract_fields_in_order(path_docx: pathlib.Path):
             ordenados.append(c)
     return ordenados
 
+# --- Diccionario para mostrar etiquetas más legibles ---
+labels_amigables = {
+    "anio": "Año",
+    "nombre_cliente": "Nombre del cliente",
+    "fecha": "Fecha",
+    "destino": "Destino",
+    "precio_total": "Precio total",
+    # añade aquí todos los que necesites
+}
+
 # --- Carpeta donde buscar plantillas: la misma que app.py ---
 BASE_DIR = pathlib.Path(__file__).parent
 plantillas = list(BASE_DIR.glob("*.docx"))
 
-# Si no hay .docx junto a app.py, avisamos y paramos
 if not plantillas:
     st.error("No se han encontrado archivos .docx junto a este app.py. "
              "Sube tus plantillas .docx a la raíz del repositorio y recarga.")
@@ -55,7 +64,8 @@ if not campos:
 st.markdown("### Rellena los campos:")
 context = {}
 for c in campos:
-    context[c] = st.text_input(c)
+    etiqueta = labels_amigables.get(c, c)  # Usa traducción si existe
+    context[c] = st.text_input(etiqueta)
 
 # Generar y descargar
 if st.button("🖨 Generar Documento"):
@@ -70,5 +80,4 @@ if st.button("🖨 Generar Documento"):
         file_name=f"{ruta_plantilla.stem}_rellenado.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
-
 
