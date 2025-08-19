@@ -27,6 +27,14 @@ labels_amigables = {
     "fecha": "Fecha",
     "destino": "Destino",
     "precio_total": "Precio total",
+    "anio_vuelo": "Año del vuelo",
+    "dia_vuelo": "Dia del vuelo",
+    "mes_vuelo": "Mes del vuelo",
+    "precio_billetes": "Precio de los billetes",
+    "SEGURO": "Seguro",
+    "proveedores_servicios": "Proveedores de los servicios",
+    "mayoristas_agencias": " Mayoristas de las agencias",
+    "cod_postal": "Código postal",
     # añade aquí todos los que necesites
 }
 
@@ -80,4 +88,5 @@ if st.button("🖨 Generar Documento"):
         file_name=f"{ruta_plantilla.stem}_rellenado.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
 
